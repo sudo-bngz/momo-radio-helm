@@ -1,0 +1,108 @@
+{{- $fullname := include "momo-radio.fullname" . -}}
+{{- $labels := include "momo-radio.labels" . -}}
+
+{{- if .Values.networkPolicy.enabled }}
+# ==========================================
+# 1. SERVER POLICY
+# ==========================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullname }}-server
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-server
+  policyTypes:
+    - Ingress
+  ingress:
+    # Rule 1: Allow web traffic from NGINX Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressController.namespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressController.podLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.server.port }}
+    # Rule 2: Allow metrics scraping from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.namespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.podLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 9091
+
+---
+# ==========================================
+# 2. WORKER POLICY
+# ==========================================
+{{- if .Values.worker.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullname }}-worker
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-worker
+  policyTypes:
+    - Ingress
+  ingress:
+    # Rule 1: Allow ONLY metrics scraping from Prometheus. Block everything else.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.namespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.podLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 9091
+{{- end }}
+
+---
+# ==========================================
+# 3. STREAMER POLICY
+# ==========================================
+{{- if .Values.streamer.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullname }}-streamer
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: streamer
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-streamer
+  policyTypes:
+    - Ingress
+  ingress:
+    # Rule 1: Allow ONLY metrics scraping from Prometheus. Block everything else.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.namespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.prometheus.podLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 9091
+{{- end }}
+{{- end }}

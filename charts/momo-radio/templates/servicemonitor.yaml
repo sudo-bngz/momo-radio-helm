@@ -1,0 +1,22 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "momo-radio.fullname" . }}
+  labels:
+    {{- include "momo-radio.labels" . | nindent 4 }}
+    # Inject the label required by your Prometheus operator (e.g., release: prometheus)
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      # This matches the common part-of label, grabbing the Server, Worker, AND Streamer services!
+      app.kubernetes.io/part-of: {{ template "momo-radio.name" . }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      path: {{ .Values.metrics.serviceMonitor.path }}
+{{- end }}

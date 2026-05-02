@@ -9,3 +9,4 @@ charts/*/charts/
 .idea/
 .vscode/
 *.swp
+commit.patch

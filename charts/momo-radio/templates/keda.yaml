@@ -1,0 +1,47 @@
+{{- $fullname := include "momo-radio.fullname" . -}}
+{{- $labels := include "momo-radio.labels" . -}}
+
+{{- if and .Values.worker.enabled .Values.worker.keda.enabled }}
+# 1. Authenticate KEDA securely to Redis
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ $fullname }}-redis-auth
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: {{ .Values.envFromSecret }}
+      key: {{ .Values.worker.keda.redis.passwordSecretKey }}
+---
+# 2. Define the Scaling Rules
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $fullname }}-worker
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $fullname }}-worker
+  minReplicaCount: {{ .Values.worker.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.worker.keda.maxReplicas }}
+  # KEDA checks the queue length every 15 seconds
+  pollingInterval: 15
+  # Wait 300 seconds (5 mins) after the queue empties before scaling back to 0
+  cooldownPeriod: 300
+  triggers:
+    {{- range .Values.worker.keda.redis.queues }}
+    - type: redis
+      metadata:
+        address: {{ $.Values.worker.keda.redis.address | quote }}
+        listName: {{ .name | quote }}
+        listLength: {{ .targetLength | quote }}
+      authenticationRef:
+        name: {{ $fullname }}-redis-auth
+    {{- end }}
+{{- end }}
