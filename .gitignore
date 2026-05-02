@@ -1,0 +1,11 @@
+# Helm
+**/.terraform
+**/.terragrunt-cache
+*.tgz
+charts/*/charts/
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
