@@ -1,0 +1,216 @@
+## Momo Radio Configuration
+## Ref: https://github.com/sudo-bngz/momo-radio-infra
+
+# -- Name of the existing Kubernetes secret containing sensitive environment variables
+# This secret must contain: RADIO_DATABASE_PASSWORD, RADIO_STORAGE_APP_KEY, RADIO_REDIS_PASSWORD, RADIO_SERVICES_DISCOGS_TOKEN
+envFromSecret: "momo-radio-secret"
+
+## Global application settings
+config:
+  storage:
+    # -- Storage provider type (s3 or local)
+    provider: "s3"
+    # -- S3 compatible endpoint (e.g., Backblaze, AWS, MinIO)
+    endpoint: "https://s3.example.com"
+    # -- S3 region
+    region: "us-east-1"
+    # -- S3 Key ID (Public)
+    keyId: "YOUR_KEY_ID"
+    # -- Bucket for raw ingest
+    bucketIngest: "radio-ingest-raw"
+    # -- Bucket for processed production assets
+    bucketProd: "radio-assets-files"
+    # -- Bucket for HLS live stream segments
+    bucketStreamLive: "radio-stream-live"
+    # -- Bucket for original high-quality master files
+    bucketMaster: "radio-master-files"
+    
+  server:
+    # -- Seconds between polling for new tracks
+    pollingInterval: 10
+    # -- Temporary directory for audio processing
+    tempDir: "/tmp/processing"
+    # -- Application timezone for scheduling
+    timezone: "UTC"
+    
+  database:
+    # -- External PostgreSQL host
+    host: "postgres.example.com"
+    # -- PostgreSQL port
+    port: 5432
+    # -- Database user
+    user: "radio_user"
+    # -- Database name
+    name: "radio_db"
+    
+  redis:
+    # -- External Redis host
+    host: "redis.example.com"
+    # -- Redis port
+    port: 6379
+
+## Secret Management
+secrets:
+  # -- Integration with Cloud Secret Managers via ExternalSecrets Operator
+  external:
+    enabled: true
+    # -- Name of the SecretStore resource
+    secretStoreName: "secret-store-name"
+    # -- Kind of the SecretStore (e.g., SecretStore or ClusterSecretStore)
+    secretStoreKind: "SecretStore"
+    # -- The reference name/key in your external secret manager
+    remoteRef: "momo-radio-secrets"
+  # -- Local secret creation for testing/development (Creates a standard k8s Secret)
+  manual:
+    enabled: false
+    # -- Dummy or test credentials to populate the manual secret
+    data:
+      RADIO_DATABASE_PASSWORD: "change_me"
+      RADIO_STORAGE_APP_KEY: "change_me"
+      RADIO_REDIS_PASSWORD: "change_me"
+      RADIO_SERVICES_DISCOGS_TOKEN: "change_me"
+
+## 1. API & Web Server
+server:
+  # -- Enable the API and Frontend UI deployment
+  enabled: true
+  # -- Number of running server pods
+  replicaCount: 2
+  # -- Internal container port for the HTTP server
+  port: 8081
+  image:
+    # -- Server container image repository
+    repository: ghcr.io/sudo-bgnz/momo-radio-api
+    # -- Server container image tag
+    tag: "latest"
+    # -- Server image pull policy
+    pullPolicy: IfNotPresent
+  # -- Extra environment variables injected specifically into the server pods
+  env:
+    RADIO_SERVER_PORT: ":8081"
+    RADIO_METRICS_PORT: ":9091"
+  # -- Kubernetes resource requests and limits for the server
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # -- PodDisruptionBudget configuration for high availability
+  pdb:
+    enabled: true
+    maxUnavailable: 1
+  # -- Horizontal Pod Autoscaling (HPA) configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+## 2. Background Worker
+worker:
+  # -- Enable the background job processor (Ingester) deployment
+  enabled: true
+  # -- Max simultaneous jobs processed per worker pod
+  concurrency: 6
+  # -- Initial replica count (Overridden by KEDA if enabled)
+  replicaCount: 1
+  image:
+    # -- Worker container image repository
+    repository: ghcr.io/sudo-bngz/momo-radio-worker
+    # -- Worker container image tag
+    tag: "latest"
+    # -- Worker image pull policy
+    pullPolicy: IfNotPresent
+  # -- Kubernetes resource requests and limits for the worker
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 1Gi
+  # -- PodDisruptionBudget configuration
+  pdb:
+    enabled: true
+    maxUnavailable: 1
+  # -- Standard HPA (Must be false if using KEDA)
+  autoscaling:
+    enabled: false
+  # -- Queue-based event-driven autoscaling via KEDA
+  keda:
+    enabled: true
+    minReplicas: 0
+    maxReplicas: 5
+    redis:
+      # -- Internal cluster address for Redis monitoring
+      address: "redis.example.com:6379"
+      # -- The key inside `envFromSecret` containing the Redis password
+      passwordSecretKey: "RADIO_REDIS_PASSWORD"
+      # -- Asynq queues to monitor and their target lengths
+      queues:
+        - name: "asynq:{ingest}:pending"
+          targetLength: "7"
+        - name: "asynq:{exports}:pending"
+          targetLength: "3"
+
+## 3. Live HLS Streamer
+streamer:
+  # -- Enable the FFmpeg HLS broadcast deployment
+  enabled: true
+  # -- Replicas MUST be exactly 1 to avoid stream chunk collision
+  replicaCount: 1
+  image:
+    # -- Streamer container image repository
+    repository: ghcr.io/sudo-bngz/momo-radio-streamer
+    # -- Streamer container image tag
+    tag: "latest"
+    # -- Streamer image pull policy
+    pullPolicy: IfNotPresent
+  # -- Kubernetes resource requests and limits for the streamer
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: 1500m
+      memory: 1Gi
+
+## 4. Network & Security
+ingress:
+  # -- Enable external HTTP routing via Ingress
+  enabled: true
+  # -- Ingress controller class name
+  className: "nginx"
+  # -- Primary domain name for the API
+  host: "api.example.com"
+  # -- TLS configuration
+  tls:
+    enabled: true
+    secretName: "momo-radio-tls"
+    clusterIssuer: "letsencrypt-prod"
+  # -- NGINX specific annotations (e.g., upload size limits)
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+metrics:
+  # -- Enable Prometheus metrics endpoints (port 9091)
+  enabled: true
+  # -- Deploy a Prometheus ServiceMonitor resource
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+
+networkPolicy:
+  # -- Enable Zero-Trust cluster firewall rules
+  enabled: true
+  # -- Labels to identify your Ingress Controller namespace/pods
+  ingressController:
+    namespaceLabels: { kubernetes.io/metadata.name: ingress-nginx }
+    podLabels: { app.kubernetes.io/name: ingress-nginx }
+  # -- Labels to identify your Prometheus monitoring namespace/pods
+  prometheus:
+    namespaceLabels: { kubernetes.io/metadata.name: monitoring }
+    podLabels: { app.kubernetes.io/name: prometheus }

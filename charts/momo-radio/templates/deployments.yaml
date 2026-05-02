@@ -1,0 +1,114 @@
+{{- $fullname := include "momo-radio.fullname" . -}}
+{{- $labels := include "momo-radio.labels" . -}}
+
+# 1. SERVER (API/UI)
+{{- if .Values.server.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}-server
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $fullname }}-server
+        {{- $labels | nindent 8 }}
+    spec:
+      containers:
+        - name: server
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.port }}
+          env:
+            {{- include "momo-radio.env.common" . | nindent 12 }}
+            {{- range $name, $value := .Values.server.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret }}
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+{{- end }}
+---
+# 2. WORKER (Ingester)
+{{- if .Values.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}-worker
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  {{- if not .Values.worker.keda.enabled }}
+  replicas: {{ .Values.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $fullname }}-worker
+        {{- $labels | nindent 8 }}
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            {{- include "momo-radio.env.common" . | nindent 12 }}
+            - name: RADIO_WORKER_CONCURRENCY
+              value: {{ .Values.worker.concurrency | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+{{- end }}
+---
+# 3. STREAMER (FFmpeg)
+{{- if .Values.streamer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}-streamer
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: streamer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $fullname }}-streamer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $fullname }}-streamer
+        {{- $labels | nindent 8 }}
+    spec:
+      containers:
+        - name: streamer
+          image: "{{ .Values.streamer.image.repository }}:{{ .Values.streamer.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.streamer.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            {{- include "momo-radio.env.common" . | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret }}
+          resources:
+            {{- toYaml .Values.streamer.resources | nindent 12 }}
+{{- end }}

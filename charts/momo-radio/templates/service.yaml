@@ -1,0 +1,66 @@
+{{- $fullname := include "momo-radio.fullname" . -}}
+{{- $labels := include "momo-radio.labels" . -}}
+
+# 1. SERVER SERVICE (HTTP Traffic + Metrics)
+{{- if .Values.server.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullname }}-server
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 9091
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: {{ $fullname }}-server
+{{- end }}
+---
+# 2. WORKER METRICS SERVICE (Internal Only)
+{{- if .Values.worker.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullname }}-worker-metrics
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  clusterIP: None # This makes it a "Headless" service (no load balancing, just DNS/Discovery)
+  ports:
+    - port: 9091
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: {{ $fullname }}-worker
+{{- end }}
+---
+# 3. STREAMER METRICS SERVICE (Internal Only)
+{{- if .Values.streamer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullname }}-streamer-metrics
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: streamer
+spec:
+  clusterIP: None 
+  ports:
+    - port: 9091
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: {{ $fullname }}-streamer
+{{- end }}

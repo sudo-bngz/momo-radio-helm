@@ -9,3 +9,9 @@ charts/*/charts/
 .idea/
 .vscode/
 *.swp
+commit.patch
+
+values-test.yaml
+*-secret.yaml
+*.key
+.env
