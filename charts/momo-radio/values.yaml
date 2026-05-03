@@ -69,6 +69,16 @@ secrets:
       RADIO_STORAGE_APP_KEY: "change_me"
       RADIO_REDIS_PASSWORD: "change_me"
       RADIO_SERVICES_DISCOGS_TOKEN: "change_me"
+  external:
+    enabled: true
+    # -- The name of the SecretStore or ClusterSecretStore resource.
+    secretStoreName: "radio-secret-store"
+    # -- The kind of the SecretStore (SecretStore or ClusterSecretStore).
+    secretStoreKind: "SecretStore"
+    # -- The reference name/key of the secret within your external secret manager.
+    remoteRef: "momo-radio-prod-secrets"
+    # -- How often the operator should check for updates in the external manager.
+    refreshInterval: "1h"
 
 ## 1. API & Web Server
 server:
