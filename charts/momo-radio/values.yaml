@@ -90,7 +90,7 @@ server:
   port: 8081
   image:
     # -- Server container image repository
-    repository: ghcr.io/sudo-bgnz/momo-radio-api
+    repository: ghcr.io/sudo-bngz/momo-radio-api
     # -- Server container image tag
     tag: "latest"
     # -- Server image pull policy
@@ -128,7 +128,7 @@ worker:
   replicaCount: 1
   image:
     # -- Worker container image repository
-    repository: ghcr.io/sudo-bngz/momo-radio-worker
+    repository: ghcr.io/sudo-bngz/momo-radio-ingester
     # -- Worker container image tag
     tag: "latest"
     # -- Worker image pull policy

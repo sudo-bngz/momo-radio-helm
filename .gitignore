@@ -11,7 +11,7 @@ charts/*/charts/
 *.swp
 commit.patch
 
-values-test.yaml
+values-*.yaml
 *-secret.yaml
 *.key
 .env
