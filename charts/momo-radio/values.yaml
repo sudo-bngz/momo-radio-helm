@@ -128,7 +128,7 @@ worker:
   replicaCount: 1
   image:
     # -- Worker container image repository
-    repository: ghcr.io/sudo-bngz/momo-radio-ingester
+    repository: ghcr.io/sudo-bngz/momo-radio-worker
     # -- Worker container image tag
     tag: "latest"
     # -- Worker image pull policy
