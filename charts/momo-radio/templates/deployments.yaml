@@ -35,13 +35,15 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
           envFrom:
+            {{- range .Values.envFromSecrets }}
             - secretRef:
-                name: {{ .Values.envFromSecret }}
+                name: {{ . }}
+            {{- end }}
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
 {{- end }}
 ---
-# 2. WORKER (Ingester)
+# 2. WORKER
 {{- if .Values.worker.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -72,8 +74,10 @@ spec:
             - name: RADIO_WORKER_CONCURRENCY
               value: {{ .Values.worker.concurrency | quote }}
           envFrom:
+            {{- range .Values.envFromSecrets }}
             - secretRef:
-                name: {{ .Values.envFromSecret }}
+                name: {{ . }}
+            {{- end }}
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
 {{- end }}
@@ -107,8 +111,10 @@ spec:
           env:
             {{- include "momo-radio.env.common" . | nindent 12 }}
           envFrom:
+            {{- range .Values.envFromSecrets }}
             - secretRef:
-                name: {{ .Values.envFromSecret }}
+                name: {{ . }}
+            {{- end }}
           resources:
             {{- toYaml .Values.streamer.resources | nindent 12 }}
 {{- end }}
