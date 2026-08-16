@@ -30,19 +30,15 @@ spec:
               containerPort: {{ .Values.server.port }}
           env:
             {{- include "momo-radio.env.common" . | nindent 12 }}
-            {{- if .Values.server.env }}
             {{- range $name, $value := .Values.server.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- end }}
-          {{- if .Values.envFromSecrets }}
           envFrom:
             {{- range .Values.envFromSecrets }}
             - secretRef:
                 name: {{ . }}
             {{- end }}
-          {{- end }}
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
 {{- end }}
@@ -77,19 +73,11 @@ spec:
             {{- include "momo-radio.env.common" . | nindent 12 }}
             - name: RADIO_WORKER_CONCURRENCY
               value: {{ .Values.worker.concurrency | quote }}
-            {{- if .Values.worker.env }}
-            {{- range $name, $value := .Values.worker.env }}
-            - name: {{ $name }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
-          {{- if .Values.envFromSecrets }}
           envFrom:
             {{- range .Values.envFromSecrets }}
             - secretRef:
                 name: {{ . }}
             {{- end }}
-          {{- end }}
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
 {{- end }}
@@ -122,19 +110,11 @@ spec:
           imagePullPolicy: {{ .Values.streamer.image.pullPolicy | default "IfNotPresent" }}
           env:
             {{- include "momo-radio.env.common" . | nindent 12 }}
-            {{- if .Values.streamer.env }}
-            {{- range $name, $value := .Values.streamer.env }}
-            - name: {{ $name }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
-          {{- if .Values.envFromSecrets }}
           envFrom:
             {{- range .Values.envFromSecrets }}
             - secretRef:
                 name: {{ . }}
             {{- end }}
-          {{- end }}
           resources:
             {{- toYaml .Values.streamer.resources | nindent 12 }}
 {{- end }}
