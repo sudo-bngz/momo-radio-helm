@@ -23,44 +23,90 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | 
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: {{ template "momo-radio.name" . }}
 {{- end }}
-
 {{/* 
   Momo Radio Common Environment Variables 
   Mapping from values.yaml to Go App expectations
 */}}
 {{- define "momo-radio.env.common" -}}
+
+{{- if .Values.config.storage }}
+{{- if .Values.config.storage.provider }}
 - name: RADIO_STORAGE_PROVIDER
   value: {{ .Values.config.storage.provider | quote }}
+{{- end }}
+{{- if .Values.config.storage.endpoint }}
 - name: RADIO_STORAGE_ENDPOINT
   value: {{ .Values.config.storage.endpoint | quote }}
+{{- end }}
+{{- if .Values.config.storage.region }}
 - name: RADIO_STORAGE_REGION
   value: {{ .Values.config.storage.region | quote }}
+{{- end }}
+{{- if .Values.config.storage.keyId }}
 - name: RADIO_STORAGE_KEY_ID
   value: {{ .Values.config.storage.keyId | quote }}
+{{- end }}
+{{- if .Values.config.storage.bucketIngest }}
 - name: RADIO_STORAGE_BUCKET_INGEST
   value: {{ .Values.config.storage.bucketIngest | quote }}
+{{- end }}
+{{- if .Values.config.storage.bucketProd }}
 - name: RADIO_STORAGE_BUCKET_PROD
   value: {{ .Values.config.storage.bucketProd | quote }}
+{{- end }}
+{{- if .Values.config.storage.bucketStreamLive }}
 - name: RADIO_STORAGE_BUCKET_STREAM_LIVE
   value: {{ .Values.config.storage.bucketStreamLive | quote }}
+{{- end }}
+{{- if .Values.config.storage.bucketMaster }}
 - name: RADIO_STORAGE_BUCKET_MASTER
   value: {{ .Values.config.storage.bucketMaster | quote }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.config.server }}
+{{- if .Values.config.server.timezone }}
 - name: RADIO_TIMEZONE
   value: {{ .Values.config.server.timezone | quote }}
-- name: RADIO_DATABASE_HOST
-  value: {{ .Values.config.database.host | quote }}
-- name: RADIO_DATABASE_PORT
-  value: {{ .Values.config.database.port | quote }}
-- name: RADIO_DATABASE_USER
-  value: {{ .Values.config.database.user | quote }}
-- name: RADIO_DATABASE_NAME
-  value: {{ .Values.config.database.name | quote }}
-- name: RADIO_REDIS_HOST
-  value: {{ .Values.config.redis.host | quote }}
-- name: RADIO_REDIS_PORT
-  value: {{ .Values.config.redis.port | quote }}
+{{- end }}
+{{- if .Values.config.server.pollingInterval }}
 - name: RADIO_SERVER_POLLING_INTERVAL_SECONDS
   value: {{ .Values.config.server.pollingInterval | quote }}
+{{- end }}
+{{- if .Values.config.server.tempDir }}
 - name: RADIO_SERVER_TEMP_DIR
   value: {{ .Values.config.server.tempDir | quote }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.config.database }}
+{{- if .Values.config.database.host }}
+- name: RADIO_DATABASE_HOST
+  value: {{ .Values.config.database.host | quote }}
+{{- end }}
+{{- if .Values.config.database.port }}
+- name: RADIO_DATABASE_PORT
+  value: {{ .Values.config.database.port | quote }}
+{{- end }}
+{{- if .Values.config.database.user }}
+- name: RADIO_DATABASE_USER
+  value: {{ .Values.config.database.user | quote }}
+{{- end }}
+{{- if .Values.config.database.name }}
+- name: RADIO_DATABASE_NAME
+  value: {{ .Values.config.database.name | quote }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.config.redis }}
+{{- if .Values.config.redis.host }}
+- name: RADIO_REDIS_HOST
+  value: {{ .Values.config.redis.host | quote }}
+{{- end }}
+{{- if .Values.config.redis.port }}
+- name: RADIO_REDIS_PORT
+  value: {{ .Values.config.redis.port | quote }}
+{{- end }}
+{{- end }}
+
 {{- end }}
