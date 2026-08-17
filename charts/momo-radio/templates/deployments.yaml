@@ -14,12 +14,13 @@ spec:
   replicas: {{ .Values.server.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $fullname }}-server
+      {{- include "momo-radio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $fullname }}-server
         {{- $labels | nindent 8 }}
+        app.kubernetes.io/component: server
     spec:
       containers:
         - name: server
@@ -58,12 +59,13 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $fullname }}-worker
+      {{- include "momo-radio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $fullname }}-worker
         {{- $labels | nindent 8 }}
+        app.kubernetes.io/component: worker
     spec:
       containers:
         - name: worker
@@ -97,12 +99,13 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $fullname }}-streamer
+      {{- include "momo-radio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: streamer
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $fullname }}-streamer
         {{- $labels | nindent 8 }}
+        app.kubernetes.io/component: streamer
     spec:
       containers:
         - name: streamer
