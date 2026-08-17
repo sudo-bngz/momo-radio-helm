@@ -16,7 +16,7 @@ spec:
       app.kubernetes.io/part-of: {{ template "momo-radio.name" . }}
   endpoints:
     - port: metrics
-      interval: {{ .Values.metrics.serviceMonitor.interval }}
-      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
-      path: {{ .Values.metrics.serviceMonitor.path }}
+      interval: {{ .Values.metrics.serviceMonitor.interval | default "15s" | quote }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" | quote }}
+      path: {{ .Values.metrics.serviceMonitor.path | default "/metrics" | quote }}
 {{- end }}
