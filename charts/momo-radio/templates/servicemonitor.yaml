@@ -1,11 +1,14 @@
-{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+{{- if .Values.metrics }}
+{{- if .Values.metrics.enabled }}
+{{- if .Values.metrics.serviceMonitor }}
+{{- if .Values.metrics.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "momo-radio.fullname" . }}
   labels:
     {{- include "momo-radio.labels" . | nindent 4 }}
-    # Inject the label required by your Prometheus operator (e.g., release: prometheus)
+    # Inject the label required by your Prometheus operator
     {{- with .Values.metrics.serviceMonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -19,4 +22,7 @@ spec:
       interval: {{ .Values.metrics.serviceMonitor.interval | default "15s" | quote }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" | quote }}
       path: {{ .Values.metrics.serviceMonitor.path | default "/metrics" | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
