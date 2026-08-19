@@ -14,15 +14,17 @@ spec:
   type: ClusterIP
   ports:
     - port: 80
-      targetPort: http
+      targetPort: {{ .Values.server.port | default 8081 }}
       protocol: TCP
       name: http
     - port: 9091
-      targetPort: metrics
+      targetPort: 9091
       protocol: TCP
       name: metrics
   selector:
-    app.kubernetes.io/name: {{ $fullname }}-server
+    app.kubernetes.io/name: {{ include "momo-radio.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: server
 {{- end }}
 ---
 # 2. WORKER METRICS SERVICE (Internal Only)
@@ -38,11 +40,13 @@ spec:
   clusterIP: None # This makes it a "Headless" service (no load balancing, just DNS/Discovery)
   ports:
     - port: 9091
-      targetPort: metrics
+      targetPort: 9091
       protocol: TCP
       name: metrics
   selector:
-    app.kubernetes.io/name: {{ $fullname }}-worker
+    app.kubernetes.io/name: {{ include "momo-radio.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: worker
 {{- end }}
 ---
 # 3. STREAMER METRICS SERVICE (Internal Only)
@@ -58,9 +62,11 @@ spec:
   clusterIP: None 
   ports:
     - port: 9091
-      targetPort: metrics
+      targetPort: 9091
       protocol: TCP
       name: metrics
   selector:
-    app.kubernetes.io/name: {{ $fullname }}-streamer
+    app.kubernetes.io/name: {{ include "momo-radio.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: streamer
 {{- end }}
