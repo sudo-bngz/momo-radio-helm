@@ -49,36 +49,23 @@ envFromSecret: "momo-radio-secret"
 #     # -- Redis port
 #     port: 6379
 
-# ## Secret Management
+## Secret Management
 # secrets:
 #   # -- Integration with Cloud Secret Managers via ExternalSecrets Operator
 #   external:
 #     enabled: true
-#     # -- Name of the SecretStore resource
-#     secretStoreName: "secret-store-name"
-#     # -- Kind of the SecretStore (e.g., SecretStore or ClusterSecretStore)
-#     secretStoreKind: "SecretStore"
-#     # -- The reference name/key in your external secret manager
-#     remoteRef: "momo-radio-secrets"
+#     secretStoreName: "radio-secret-store"
+#     secretStoreKind: "ClusterSecretStore"
+#     remoteRef: "momo-radio-prod-secrets"
+#     refreshInterval: "1h"
 #   # -- Local secret creation for testing/development (Creates a standard k8s Secret)
 #   manual:
 #     enabled: false
-#     # -- Dummy or test credentials to populate the manual secret
 #     data:
 #       RADIO_DATABASE_PASSWORD: "change_me"
 #       RADIO_STORAGE_APP_KEY: "change_me"
 #       RADIO_REDIS_PASSWORD: "change_me"
 #       RADIO_SERVICES_DISCOGS_TOKEN: "change_me"
-#   external:
-#     enabled: true
-#     # -- The name of the SecretStore or ClusterSecretStore resource.
-#     secretStoreName: "radio-secret-store"
-#     # -- The kind of the SecretStore (SecretStore or ClusterSecretStore).
-#     secretStoreKind: "SecretStore"
-#     # -- The reference name/key of the secret within your external secret manager.
-#     remoteRef: "momo-radio-prod-secrets"
-#     # -- How often the operator should check for updates in the external manager.
-#     refreshInterval: "1h"
 
 ## 1. API & Web Server
 server:
@@ -188,21 +175,42 @@ streamer:
       memory: 1Gi
 
 ## 4. Network & Security
+# -- Main Ingress for the UI/SPA and general traffic
 ingress:
   # -- Enable external HTTP routing via Ingress
   enabled: true
   # -- Ingress controller class name
   className: "nginx"
-  # -- Primary domain name for the API
-  host: "api.example.com"
+  # -- Primary domain name for the frontend UI
+  host: "radio.example.com"
   # -- TLS configuration
   tls:
     enabled: true
     secretName: "momo-radio-tls"
     clusterIssuer: "letsencrypt-prod"
-  # -- NGINX specific annotations (e.g., upload size limits)
+  # -- NGINX specific annotations
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+
+# -- Optional Dedicated Ingress for the API (for WAF/CDN separation and large uploads)
+apiIngress:
+  # -- Enable dedicated API ingress routing
+  enabled: false
+  # -- Ingress controller class name
+  className: "nginx"
+  # -- Domain name for API endpoints
+  host: "api.example.com"
+  # -- TLS configuration
+  tls:
+    enabled: false
+    secretName: "momo-radio-api-tls"
+    clusterIssuer: "letsencrypt-prod"
+  # -- NGINX specific annotations for API & uploads
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 
 metrics:
   # -- Enable Prometheus metrics endpoints (port 9091)
