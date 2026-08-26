@@ -1,14 +1,17 @@
-{{- if .Values.apiIngress.enabled -}}
+{{- if .Values.apiIngress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "momo-radio.fullname" . }}-api
   labels:
     {{- include "momo-radio.labels" . | nindent 4 }}
-  {{- with .Values.apiIngress.annotations }}
   annotations:
+    {{ if .Values.apiIngress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.apiIngress.tls.clusterIssuer | quote }}
+    {{- end }}
+    {{- with .Values.apiIngress.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.apiIngress.className }}
   {{- if .Values.apiIngress.tls.enabled }}

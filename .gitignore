@@ -15,3 +15,4 @@ values-*.yaml
 *-secret.yaml
 *.key
 .env
+commit.patch
