@@ -1,6 +1,14 @@
 {{- $fullname := include "momo-radio.fullname" . -}}
 {{- $labels := include "momo-radio.labels" . -}}
 
+{{- /* Determine the API URL: use dedicated API Ingress if enabled, else fallback to standard Ingress */ -}}
+{{- $apiUrl := "" -}}
+{{- if and .Values.apiIngress .Values.apiIngress.enabled -}}
+  {{- $apiUrl = printf "https://%s" .Values.apiIngress.host -}}
+{{- else if and .Values.ingress .Values.ingress.enabled -}}
+  {{- $apiUrl = printf "https://%s" .Values.ingress.host -}}
+{{- end -}}
+
 # 1. SERVER (API/UI)
 {{- if .Values.server.enabled }}
 apiVersion: apps/v1
@@ -30,6 +38,8 @@ spec:
             - name: http
               containerPort: {{ .Values.server.port }}
           env:
+            - name: RADIO_SERVER_PUBLIC_API_URL
+              value: {{ $apiUrl | quote }}
             {{- include "momo-radio.env.common" . | nindent 12 }}
             {{- range $name, $value := .Values.server.env }}
             - name: {{ $name }}
@@ -72,6 +82,8 @@ spec:
           image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.worker.image.pullPolicy | default "IfNotPresent" }}
           env:
+            - name: RADIO_SERVER_PUBLIC_API_URL
+              value: {{ $apiUrl | quote }}
             {{- include "momo-radio.env.common" . | nindent 12 }}
             - name: RADIO_WORKER_CONCURRENCY
               value: {{ .Values.worker.concurrency | quote }}
@@ -112,6 +124,8 @@ spec:
           image: "{{ .Values.streamer.image.repository }}:{{ .Values.streamer.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.streamer.image.pullPolicy | default "IfNotPresent" }}
           env:
+            - name: RADIO_SERVER_PUBLIC_API_URL
+              value: {{ $apiUrl | quote }}
             {{- include "momo-radio.env.common" . | nindent 12 }}
           envFrom:
             {{- range .Values.envFromSecrets }}
