@@ -3,6 +3,30 @@ entries:
   momo-radio:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-08-26T04:36:34.411482424Z"
+    description: Radio streaming service design for music makers
+    digest: 8dfb0b8c892628f25d1fd2727ef8bfddede5938e2eb86e695875eab57264547a
+    home: https://github.com/sudo-bngz/momo-radio-helm
+    icon: https://raw.githubusercontent.com/sudo-bngz/momo-radio-api/main/logo.png
+    keywords:
+    - radio
+    - streaming
+    - ffmpeg
+    - hls
+    - keda
+    - saas
+    maintainers:
+    - email: hello@momosbasement.com
+      name: momo
+    name: momo-radio
+    sources:
+    - https://github.com/sudo-bngz/momo-radio
+    type: application
+    urls:
+    - https://github.com/sudo-bngz/momo-radio-helm/releases/download/momo-radio-0.2.3/momo-radio-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-08-26T03:44:01.045360415Z"
     description: Radio streaming service design for music makers
     digest: 981250e74d5b6684c8e5aa84912e5922c83699b6332cfdec9e83e69742ce7a4b
@@ -289,4 +313,4 @@ entries:
     urls:
     - https://github.com/sudo-bngz/momo-radio-helm/releases/download/momo-radio-0.1.1/momo-radio-0.1.1.tgz
     version: 0.1.1
-generated: "2026-08-26T03:44:01.045395867Z"
+generated: "2026-08-26T04:36:34.411562393Z"
