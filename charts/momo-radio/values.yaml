@@ -79,7 +79,7 @@ server:
     # -- Server container image repository
     repository: ghcr.io/sudo-bngz/momo-radio-api
     # -- Server container image tag
-    tag: "latest"
+    tag: "v0.9.0"  # <-- UPDATED HERE
     # -- Server image pull policy
     pullPolicy: IfNotPresent
   # -- Extra environment variables injected specifically into the server pods
@@ -117,7 +117,7 @@ worker:
     # -- Worker container image repository
     repository: ghcr.io/sudo-bngz/momo-radio-worker
     # -- Worker container image tag
-    tag: "latest"
+    tag: "v0.9.0"
     # -- Worker image pull policy
     pullPolicy: IfNotPresent
   # -- Kubernetes resource requests and limits for the worker
@@ -162,7 +162,7 @@ streamer:
     # -- Streamer container image repository
     repository: ghcr.io/sudo-bngz/momo-radio-streamer
     # -- Streamer container image tag
-    tag: "latest"
+    tag: "v0.9.0"
     # -- Streamer image pull policy
     pullPolicy: IfNotPresent
   # -- Kubernetes resource requests and limits for the streamer

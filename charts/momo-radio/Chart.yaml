@@ -2,8 +2,8 @@ apiVersion: v2
 name: momo-radio
 description: Radio streaming service design for music makers
 type: application
-version: 0.2.3
-appVersion: "1.0.0"
+version: 0.2.0
+appVersion: "v0.9.0"
 icon: https://raw.githubusercontent.com/sudo-bngz/momo-radio-api/main/logo.png
 home: https://github.com/sudo-bngz/momo-radio-helm
 sources:
@@ -17,4 +17,4 @@ keywords:
   - saas
 maintainers:
   - name: momo
-    email: hello@momosbasement.com
+    email: source@momoradio.fm
