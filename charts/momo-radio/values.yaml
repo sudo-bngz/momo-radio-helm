@@ -5,7 +5,21 @@
 # This secret must contain: RADIO_DATABASE_PASSWORD, RADIO_STORAGE_APP_KEY, RADIO_REDIS_PASSWORD, RADIO_SERVICES_DISCOGS_TOKEN
 envFromSecret: "momo-radio-secret"
 
-## Global application settings
+# -- App secret source. Enable exactly one: an ExternalSecret (External
+# Secrets Operator) or a plain Secret rendered from `manual.data`.
+secrets:
+  external:
+    enabled: false
+    secretStoreName: ""
+    secretStoreKind: SecretStore
+    appSecretRef: ""
+    refreshInterval: 1h
+  manual:
+    enabled: false
+    data: {}
+
+## Global application settings (all optional; uncomment and set what you need)
+config: {}
 # config:
 #   storage:
 #     # -- Storage provider type (s3 or local)
@@ -24,7 +38,7 @@ envFromSecret: "momo-radio-secret"
 #     bucketStreamLive: "radio-stream-live"
 #     # -- Bucket for original high-quality master files
 #     bucketMaster: "radio-master-files"
-    
+
 #   server:
 #     # -- Seconds between polling for new tracks
 #     pollingInterval: 10
@@ -32,7 +46,7 @@ envFromSecret: "momo-radio-secret"
 #     tempDir: "/tmp/processing"
 #     # -- Application timezone for scheduling
 #     timezone: "UTC"
-    
+
 #   database:
 #     # -- External PostgreSQL host
 #     host: "postgres.example.com"
@@ -42,7 +56,7 @@ envFromSecret: "momo-radio-secret"
 #     user: "radio_user"
 #     # -- Database name
 #     name: "radio_db"
-    
+
 #   redis:
 #     # -- External Redis host
 #     host: "redis.example.com"
@@ -212,6 +226,22 @@ apiIngress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 
+# -- Station listener pages, served by the API at <slug>.<domain>
+stationPages:
+  # -- Route *.<domain> to the API, which serves each station's listener page
+  enabled: false
+  # -- Parent domain of station pages (sets RADIO_RADIO_PUBLIC_DOMAIN), e.g. "momoradio.fm"
+  domain: ""
+  # -- Ingress controller class name
+  className: "nginx"
+  # -- TLS for *.<domain>; a wildcard certificate needs a DNS-01 issuer
+  tls:
+    enabled: true
+    secretName: "momo-radio-stations-tls"
+    clusterIssuer: "letsencrypt-dns"
+  # -- Extra annotations (e.g. whitelist-source-range, external-dns options)
+  annotations: {}
+
 metrics:
   # -- Enable Prometheus metrics endpoints (port 9091)
   enabled: true
@@ -226,9 +256,9 @@ networkPolicy:
   enabled: true
   # -- Labels to identify your Ingress Controller namespace/pods
   ingressController:
-    namespaceLabels: { kubernetes.io/metadata.name: ingress-nginx }
-    podLabels: { app.kubernetes.io/name: ingress-nginx }
+    namespaceLabels: {kubernetes.io/metadata.name: ingress-nginx}
+    podLabels: {app.kubernetes.io/name: ingress-nginx}
   # -- Labels to identify your Prometheus monitoring namespace/pods
   prometheus:
-    namespaceLabels: { kubernetes.io/metadata.name: monitoring }
-    podLabels: { app.kubernetes.io/name: prometheus }
+    namespaceLabels: {kubernetes.io/metadata.name: monitoring}
+    podLabels: {app.kubernetes.io/name: prometheus}
