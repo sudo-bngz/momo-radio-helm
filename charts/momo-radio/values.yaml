@@ -24,7 +24,7 @@ envFromSecret: "momo-radio-secret"
 #     bucketStreamLive: "radio-stream-live"
 #     # -- Bucket for original high-quality master files
 #     bucketMaster: "radio-master-files"
-    
+
 #   server:
 #     # -- Seconds between polling for new tracks
 #     pollingInterval: 10
@@ -32,7 +32,7 @@ envFromSecret: "momo-radio-secret"
 #     tempDir: "/tmp/processing"
 #     # -- Application timezone for scheduling
 #     timezone: "UTC"
-    
+
 #   database:
 #     # -- External PostgreSQL host
 #     host: "postgres.example.com"
@@ -42,7 +42,7 @@ envFromSecret: "momo-radio-secret"
 #     user: "radio_user"
 #     # -- Database name
 #     name: "radio_db"
-    
+
 #   redis:
 #     # -- External Redis host
 #     host: "redis.example.com"
@@ -242,9 +242,9 @@ networkPolicy:
   enabled: true
   # -- Labels to identify your Ingress Controller namespace/pods
   ingressController:
-    namespaceLabels: { kubernetes.io/metadata.name: ingress-nginx }
-    podLabels: { app.kubernetes.io/name: ingress-nginx }
+    namespaceLabels: {kubernetes.io/metadata.name: ingress-nginx}
+    podLabels: {app.kubernetes.io/name: ingress-nginx}
   # -- Labels to identify your Prometheus monitoring namespace/pods
   prometheus:
-    namespaceLabels: { kubernetes.io/metadata.name: monitoring }
-    podLabels: { app.kubernetes.io/name: prometheus }
+    namespaceLabels: {kubernetes.io/metadata.name: monitoring}
+    podLabels: {app.kubernetes.io/name: prometheus}
