@@ -5,7 +5,21 @@
 # This secret must contain: RADIO_DATABASE_PASSWORD, RADIO_STORAGE_APP_KEY, RADIO_REDIS_PASSWORD, RADIO_SERVICES_DISCOGS_TOKEN
 envFromSecret: "momo-radio-secret"
 
-## Global application settings
+# -- App secret source. Enable exactly one: an ExternalSecret (External
+# Secrets Operator) or a plain Secret rendered from `manual.data`.
+secrets:
+  external:
+    enabled: false
+    secretStoreName: ""
+    secretStoreKind: SecretStore
+    appSecretRef: ""
+    refreshInterval: 1h
+  manual:
+    enabled: false
+    data: {}
+
+## Global application settings (all optional; uncomment and set what you need)
+config: {}
 # config:
 #   storage:
 #     # -- Storage provider type (s3 or local)
