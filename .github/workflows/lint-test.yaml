@@ -37,4 +37,12 @@ jobs:
 
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }}
+        run: |
+          set -o pipefail
+          if ! ct lint --target-branch ${{ github.event.repository.default_branch }} 2>&1 | tee ct-lint.log; then
+            # Surface the failures as annotations so they show on the PR.
+            grep -iE 'error|fail|invalid|✖' ct-lint.log | head -50 | while IFS= read -r line; do
+              echo "::error title=ct lint::${line}"
+            done
+            exit 1
+          fi
