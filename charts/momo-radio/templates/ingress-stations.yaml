@@ -1,0 +1,42 @@
+{{- /*
+Station listener pages: *.<stationPages.domain> -> API server, which serves
+each station's page based on the Host header (momo-radio >= stations PR).
+*/ -}}
+{{- if and .Values.server.enabled .Values.stationPages.enabled }}
+{{- if not .Values.stationPages.domain }}
+{{- fail "stationPages.domain is required when stationPages.enabled is true" }}
+{{- end }}
+{{- $host := printf "*.%s" (trimPrefix "." .Values.stationPages.domain) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "momo-radio.fullname" . }}-stations
+  labels:
+    {{- include "momo-radio.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.stationPages.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.stationPages.tls.clusterIssuer | quote }}
+    {{- end }}
+    {{- with .Values.stationPages.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.stationPages.className }}
+  {{- if .Values.stationPages.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $host | quote }}
+      secretName: {{ .Values.stationPages.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ $host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "momo-radio.fullname" . }}-server
+                port:
+                  number: 80
+{{- end }}

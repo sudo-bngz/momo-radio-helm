@@ -40,6 +40,12 @@ spec:
           env:
             - name: RADIO_SERVER_PUBLIC_API_URL
               value: {{ $apiUrl | quote }}
+            {{- with .Values.stationPages }}
+            {{- if .domain }}
+            - name: RADIO_RADIO_PUBLIC_DOMAIN
+              value: {{ .domain | quote }}
+            {{- end }}
+            {{- end }}
             {{- include "momo-radio.env.common" . | nindent 12 }}
             {{- range $name, $value := .Values.server.env }}
             - name: {{ $name }}

@@ -212,6 +212,22 @@ apiIngress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 
+# -- Station listener pages, served by the API at <slug>.<domain>
+stationPages:
+  # -- Route *.<domain> to the API, which serves each station's listener page
+  enabled: false
+  # -- Parent domain of station pages (sets RADIO_RADIO_PUBLIC_DOMAIN), e.g. "momoradio.fm"
+  domain: ""
+  # -- Ingress controller class name
+  className: "nginx"
+  # -- TLS for *.<domain>; a wildcard certificate needs a DNS-01 issuer
+  tls:
+    enabled: true
+    secretName: "momo-radio-stations-tls"
+    clusterIssuer: "letsencrypt-dns"
+  # -- Extra annotations (e.g. whitelist-source-range, external-dns options)
+  annotations: {}
+
 metrics:
   # -- Enable Prometheus metrics endpoints (port 9091)
   enabled: true
