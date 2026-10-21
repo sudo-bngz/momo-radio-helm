@@ -159,6 +159,9 @@ NAME: momo-radio
 | streamer.image.tag | string | `"latest"` | Docker image tag for the streamer |
 | streamer.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | streamer.resources | object | See values.yaml | Resource limits and requests for FFmpeg encoding |
+| streamer.liquidsoap.stations | string | `""` | Stations played by Liquidsoap (crossfades) instead of FFmpeg: ids or slugs, comma separated, `"*"` for all |
+| streamer.liquidsoap.crossfade | number | `4` | Crossfade between tracks, in seconds |
+| streamer.extraEnv | list | `[]` | Extra environment variables for the streamer container |
 
 ## Ingress
 
