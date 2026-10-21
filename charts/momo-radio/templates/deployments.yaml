@@ -133,6 +133,17 @@ spec:
             - name: RADIO_SERVER_PUBLIC_API_URL
               value: {{ $apiUrl | quote }}
             {{- include "momo-radio.env.common" . | nindent 12 }}
+            {{- with .Values.streamer.liquidsoap }}
+            {{- if .stations }}
+            - name: RADIO_RADIO_LIQUIDSOAP_STATIONS
+              value: {{ .stations | quote }}
+            - name: RADIO_RADIO_LIQUIDSOAP_CROSSFADE
+              value: {{ .crossfade | default 4 | quote }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.streamer.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           envFrom:
             {{- range .Values.envFromSecrets }}
             - secretRef:

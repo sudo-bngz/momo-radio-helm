@@ -187,6 +187,13 @@ streamer:
     limits:
       cpu: 1500m
       memory: 1Gi
+  liquidsoap:
+    # -- Stations played by Liquidsoap (crossfades) instead of FFmpeg: station ids or slugs, comma separated, "*" for all. Empty keeps FFmpeg everywhere
+    stations: ""
+    # -- Crossfade between tracks, in seconds (Liquidsoap stations only)
+    crossfade: 4
+  # -- Extra environment variables for the streamer container
+  extraEnv: []
 
 ## 4. Network & Security
 # -- Main Ingress for the UI/SPA and general traffic
